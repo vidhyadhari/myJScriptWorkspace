@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chat</title>
+		<link rel="stylesheet" href="css/main.css">
+	</head>
+	<body>
+		<div class="chat">
+			<input type="text" class="chat-name" placeholder="Enter your name">
+			<div class="chat-messages">
+			</div>
+			<textarea placeholder="Type your message"> </textarea>
+			<div class="chat-status">Status: <span>Idle</span>
+		</div>
+		<script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+		<script>
+			(function(){
+				//function to use query on the data .. used instead of jquery
+				var getNode = function(s) {
+					return document.querySelector(s);
+				},
+
+				//Get required nodes
+				textarea = getNode('.chat textarea'),
+				chatName = getNode('.chat-name'),
+				status = getNode('.chat-status span'),
+				messages = getNode('.chat-messages'),
+				statusDefault = status.textContent,
+
+				setStatus = function(s){
+					status.textContent = s;
+					// Change status to default after 3 secs
+					if(s !== statusDefault){
+						var delay = setTimeout (function(){
+							setStatus(statusDefault);
+							clearInterval(delay);
+						}, 3000);
+					}
+				};
+
+				try {
+					var socket = io.connect('http://127.0.0.1:8080');
+				} catch (e) {
+					// Set status to warn user
+				}
+
+				if(socket != undefined) {
+					//console.log('OK');
+					//Listen for output
+					socket.on('output' , function(data){
+						//console.log(data);
+						if(data.length) {
+							for(var x = 0; x < data.length; x = x+1){
+								var message = document.createElement('div');
+								message.setAttribute('class', 'chat-message');
+								message.textContent = data[x].name + ':' + data[x].message;
+								//Append to messages
+								messages.appendChild(message);
+								//To maintain the order
+								messages.insertBefore(message, messages.firstChild);
+							}
+						}
+					});
+					//Listen for a status
+					socket.on('status', function(data){
+						setStatus((typeof data === 'object') ? data.message : data );
+						//console.log('Status received' + data);
+						if(data.clear === true){
+							textarea.value = '';
+						}
+					});
+
+					textarea.addEventListener('keydown', function(event){
+						var self = this,
+						 	name = chatName.value;
+
+						 // console.log(event.which);
+
+						 if( event.which === 13 && event.shiftKey === false) {
+						 	// console.log('Send');
+						 	socket.emit ('input', {
+						 		name : name,
+						 		message : self.value
+						 	});
+						 	event.preventDefault();
+						}
+
+					});
+				}
+			})();
+		</script>
+	</body>
+</html>
+

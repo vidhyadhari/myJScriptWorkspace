@@ -1,0 +1,114 @@
+- First create index.html with basic text area and input to reepresent the chat application
+- Created CSS file with design specifications
+	1. Font of the whole text using body
+ 	2. max-width of the div "chat"
+	3. borders of div's "chat-messages"
+	4. Fix chat-messages area to get a nice template
+		.chat-messages{
+			width:
+			height:
+			overflow-y
+		}
+	5. Style chat-name and chat-textarea section accordingly
+	6. Fix the border-bottom:0 in chat-name and border-up in chat text area to get a good template 
+	7. Set max-width on the text-area since it can be dragged
+	8. Color chat-status
+	9. Get rid of blue-focus line
+		outline: none
+	10. Create class chat-message under chat-messages to represent each message
+
+- Node.js
+1. Make sure that nodejs and mongodb is installed on the system
+2. Set the paths for nodejs and mongodb
+3. Make sure that nodejs server runs
+	- Create server.js file
+	  node server.js
+	  To see if node is working fine
+4. Install socketio and mongodb using npm(node package manager)
+   so that server.js will be able to use it
+5. Testing the working of mongodb
+	Run mongod in one terminal
+	Run mongo in another
+		After running mongo it says connecting to: test
+	Mongodb is very dynamic there is no need to create any database
+	>use chat
+	The db may exist or may not. If the db doesn't exist it creates one
+	Collections in Mongodb are similar to tables in mysql
+	>db.messages.find()
+	Messages is the name of the collection in the DB
+	>db.messages.insert(("name": "Alex", "message":"Hello there"));
+	>db.messages.find()
+	>db.messages.remove()
+	Delete all the messages in the DB
+	
+- Server.js
+Duties of server 
+	- Connect to mongodb 
+	- Listen on socket for all connections
+1. Include mongodb and socket io in server.js
+	var mongo = require('mongodb').MongoClient,
+	    client = require('socket.io').listen(8080).sockets;
+2. Make changes in index.html to connect to the sockets
+<script src="127.0.0.1:8080/socket.io/socket.io.js></script>
+Refresh the page then you can see one connection is made to the socket.io
+To test the connection, we can try the following on console
+"var socket=io.connect("http://127.0.0.1:8080");"
+undefined
+3. Make changes in server.js to see if someone has connected using function
+client.on("connection",function(socket){console.log("Someone has connected)});
+4.This connect function is wrapped inside the connect function of mongodb. So that everytime we connect to socket it is initially connected to mongodb
+5. Test sending data from html to server.
+	socket.on('input',function(data){});
+6. Insert the data received from the http into mongodb
+	var col = db.collection('messages');
+	col.insert({name:data.name, message:data.message},function(){
+		console.log("Inserted")});
+7. Insert a quick check to check if the name or message is blank
+	whitespacePattern = /^\s*$/;
+
+- Work on index.html when a message is entered send it to server.js to enter the data into mongo.db
+1. QuerySelector using getNode() function in index.html
+	var getNode = function(s) {
+		return document.querySelector(s);
+	}
+2. Get the data in textarea and chat-name by accessing them using getNode function
+3. Connect to the socket in the index.html using 
+	try {
+		var socket = io.connect('http://127.0.0.1:8080');
+	} catch (e) {
+		
+	}
+ 	
+	if(socket != undefined){
+
+	}
+4. Write a event handler to listen for enter on the text area
+
+					textarea.addEventlistener('keydown', function(event){
+						var self = this,
+						 	name = chatName.value;
+
+						 console.log(event.which);
+					});
+
+Send the data using socket.emit function
+
+5. Ability to know that the data is being sent
+
+6. Clear the data once the message is sent to the server
+
+== Read about eventPreventDefault()=========
+
+- Change the status 
+1. Send message using socket in server.js
+2.Listen for a status in index.html
+3. Set status back to Idle after 3 secs delay using setTimeout
+
+=== Work on this=======
+1. Send all messages from server.js to index.html
+2. Send all history using col.find.sort
+3.send latest message using client.emit
+4. sort the output in the index.html
+
+
+
